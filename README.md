@@ -1,1 +1,361 @@
-# yeongwor.github.io
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <title>YDRIDDLE</title>
+    <meta charset="UTF-8">
+    <meta name="Author" content="Yenuja">
+    <meta name="keywords" content="HTML, Meta tags , Yenuja riddle">
+    <meta http-equiv="Cookie" content="Useerid=ynz; expires=saturday, 06-June-01 13:00:00 GMT;">
+    <style>
+        body {
+            background-image: url(rid2.jpg);
+            background-size: cover;
+            background-attachment: fixed;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.8);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+        }
+
+        .timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: white;
+        }
+
+        .broken {
+            display: none;
+            color: red;
+            font-size: 24px;
+            text-align: center;
+            margin-top: 20%;
+        }
+
+        .riddle {
+            display: none;
+            text-align: center;
+            margin-top: 20%;
+        }
+
+        .congratulations {
+            display: none;
+            text-align: center;
+            margin-top: 20%;
+            font-size: 24px;
+            color: #ffcc00;
+            animation: popUp 1s ease-out, lightning 1.5s infinite;
+        }
+
+        @keyframes popUp {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes lightning {
+
+            0%,
+            100% {
+                text-shadow: 0 0 5px #ffcc00, 0 0 10px #ffcc00, 0 0 15px #ffcc00, 0 0 20px #ff9900, 0 0 30px #ff9900, 0 0 40px #ff9900, 0 0 55px #ff9900, 0 0 75px #ff9900;
+            }
+
+            50% {
+                text-shadow: none;
+            }
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+            border-radius: 50%;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+        }
+
+        button:active::before {
+            width: 0;
+            height: 0;
+            top: 50%;
+            left: 50%;
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hidden-checkbox {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0;
+        }
+    </style>
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function (e) {
+            if (e.keyCode == 123) {
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+        }
+
+        function saveLoginName(name) {
+            let loginNames = JSON.parse(localStorage.getItem('loginNames')) || [];
+            let currentUser = localStorage.getItem('currentUser');
+            let isAdmin = document.getElementById('adminCheckbox').checked;
+
+            if (currentUser && currentUser !== name && name !== '@admin' && name !== '@creator' && !isAdmin) {
+                alert("You can't use another username");
+                return false;
+            }
+
+            if (loginNames.some(user => user.name === name) && name !== '@admin' && name !== '@creator' && !isAdmin) {
+                alert("This username has already been used. No more attempts allowed.");
+                return false;
+            }
+
+            loginNames.push({ name: name, timestamp: new Date().toLocaleString() });
+            localStorage.setItem('loginNames', JSON.stringify(loginNames));
+            localStorage.setItem('currentUser', name);
+            return true;
+        }
+
+        function checkLogin() {
+            var username = document.getElementById('username').value;
+            if (username) {
+                if (saveLoginName(username)) {
+                    document.getElementById('login').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('riddle').style.display = 'block';
+                    var threeMinutes = 60 * 3,
+                        display = document.querySelector('#timer');
+                    startTimer(threeMinutes, display);
+                }
+            } else {
+                alert('Please enter your name');
+            }
+        }
+
+        window.onload = function () {
+            let currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                document.getElementById('login').style.display = 'block';
+            } else if (currentUser !== '@admin' && currentUser !== '@creator') {
+                alert("You can't use another username");
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="login card" id="login">
+            <p>Enter Your Name to Continue:</p>
+            <input type="text" id="username" placeholder="Your Name" />
+            <button onclick="checkLogin()"><span>Login</span></button>
+        </div>
+        <div class="timer" id="timer">03:00</div>
+        <div class="Body1 card" id="content">
+            <h1><i>Welcome to the Riddle Number 1</i></h1>
+            <p><abbr title="Hint try to look the riddle in a different way, Root is not important">Are you ready to
+                    solve?</abbr>&nbsp;</p>
+            <div class="riddle" id="riddle">
+                <p>Solve this riddle to reveal the hidden URL:</p>
+                <p>
+                    In a land far away, there was a mystical place where people gathered to share their stories and
+                    experiences. This place was known for its vast collection of knowledge and entertainment. People
+                    from all walks of life would come here to learn, laugh, and be inspired. The place was so popular
+                    that it became a daily destination for many. It was a place where you could find tutorials on how to
+                    fix a broken sink, watch a documentary about the wonders of the universe, or simply enjoy a funny
+                    cat video. The place was accessible to everyone, and it was free to use. It was a place where
+                    creativity thrived, and people could express themselves freely. The place had a simple yet powerful
+                    interface that allowed users to search for any topic they were interested in. The search results
+                    were always relevant and helpful. The place also had a feature that allowed users to subscribe to
+                    their favorite channels, so they would never miss an update. The place was constantly evolving, with
+                    new features being added regularly. It was a place where you could find content in multiple
+                    languages, catering to a global audience. The place was also known for its community guidelines,
+                    which ensured that the content was appropriate and respectful. The place had a team of moderators
+                    who worked tirelessly to maintain the quality of the content. The place was also a platform for
+                    creators to showcase their talents and reach a wider audience. Many creators found fame and success
+                    through this platform. The place also had a monetization feature that allowed creators to earn money
+                    from their content. This feature was a game-changer for many creators, as it allowed them to turn
+                    their passion into a full-time career. The place was also a hub for live streaming, where users
+                    could watch events in real-time and interact with the hosts. The live streaming feature was
+                    particularly popular for gaming, where users could watch their favorite gamers play and learn new
+                    strategies. The place also had a recommendation algorithm that suggested content based on the user's
+                    interests and viewing history. This algorithm was highly accurate and helped users discover new
+                    content that they might enjoy. The place was also accessible on multiple devices, including
+                    smartphones, tablets, and smart TVs. This made it easy for users to access the content anytime,
+                    anywhere. The place was also integrated with social media platforms, allowing users to share their
+                    favorite content with their friends and followers. The place was a source of endless entertainment
+                    and knowledge, and it was loved by millions of people around the world. The place was none other
+                    than the most popular video-sharing platform on the internet. Can you guess what it is?
+                </p>
+                <input type="text" id="riddleAnswer" placeholder="Your answer" />
+                <button onclick="checkRiddle()"><span>Submit</span></button>
+                <p id="hiddenUrl" style="display:none;">www.youtube.com</p>
+            </div>
+        </div>
+        <div class="broken card" id="brokenMessage">
+            Time's up! The website is now broken.
+        </div>
+        <div class="congratulations card" id="congratulations">
+            Congratulations! You have solved the riddle.
+        </div>
+    </div>
+    <input type="checkbox" id="adminCheckbox" class="hidden-checkbox">
+    <script>
+        let attempts = 0;
+
+        function startTimer(duration, display) {
+            var timer = duration, minutes, seconds;
+            var interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    document.getElementById('content').style.display = 'none';
+                    document.getElementById('brokenMessage').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        function checkLogin() {
+            var username = document.getElementById('username').value;
+            if (username) {
+                if (saveLoginName(username)) {
+                    document.getElementById('login').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('riddle').style.display = 'block';
+                    var threeMinutes = 60 * 3,
+                        display = document.querySelector('#timer');
+                    startTimer(threeMinutes, display);
+                }
+            } else {
+                alert('Please enter your name');
+            }
+        }
+
+        function checkRiddle() {
+            var answer = document.getElementById('riddleAnswer').value.toLowerCase();
+            attempts++;
+            if (answer === 'youtube' || answer === 'www.youtube.com') {
+                document.getElementById('hiddenUrl').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('congratulations').style.display = 'block';
+            } else {
+                if (attempts >= 2) {
+                    alert('Incorrect answer. No more attempts left!');
+                    document.getElementById('content').style.display = 'none';
+                    document.getElementById('brokenMessage').style.display = 'block';
+                } else {
+                    alert('Incorrect answer. Try again!');
+                }
+            }
+        }
+
+        window.onload = function () {
+            let currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                document.getElementById('login').style.display = 'block';
+            } else if (currentUser !== '@admin' && currentUser !== '@creator') {
+                alert("You can't use another username");
+            }
+        };
+    </script>
+</body>
+
+</html>
